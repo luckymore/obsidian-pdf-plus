@@ -13,6 +13,7 @@
     "devDependencies": {
         "@cantoo/pdf-lib": "^1.20.2",
         "@types/node": "^16.11.6",
+        "@types/wicg-file-system-access": "^2023.10.4",
         "@typescript-eslint/eslint-plugin": "5.29.0",
         "@typescript-eslint/parser": "5.29.0",
         "builtin-modules": "3.3.0",

@@ -2,6 +2,7 @@ import { Command, Notice, setIcon } from 'obsidian';
 
 import { PDFPlusAPISubmodule } from './submodule';
 import { DestArray } from 'typings';
+import { ExportModal } from 'export';
 
 
 export class PDFPlusCommands extends PDFPlusAPISubmodule {
@@ -78,6 +79,10 @@ export class PDFPlusCommands extends PDFPlusAPISubmodule {
                 id: 'disable-pdf-edit',
                 name: 'Disable PDF edit',
                 checkCallback: (checking) => this.setWriteFile(checking, false)
+            }, {
+                id: 'export',
+                name: 'Export backlink highlights',
+                checkCallback: (checking) => this.openExportModal(checking)
             }
         ];
 
@@ -337,6 +342,17 @@ export class PDFPlusCommands extends PDFPlusAPISubmodule {
         if (!checking) {
             palette.setWriteFile(writeFile);
         }
+        return true;
+    }
+
+    openExportModal(checking: boolean) {
+        const file = this.app.workspace.getActiveFile();
+        if (!file || file.extension !== 'pdf') return false;
+
+        if (!checking) {
+            new ExportModal(this.plugin, file).open();
+        }
+
         return true;
     }
 }
