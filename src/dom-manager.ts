@@ -36,12 +36,14 @@ export class DomManager extends Component {
 
 		this.updateStyleEl();
 
-		document.body.toggleClass('pdf-plus-click-embed-to-open-link', this.plugin.settings.dblclickEmbedToOpenLink);
-		this.register(() => document.body.removeClass('pdf-plus-click-embed-to-open-link'));
-
-		this.setCSSColorVariables();
+		this.updateClass('pdf-plus-click-embed-to-open-link', this.plugin.settings.dblclickEmbedToOpenLink);
 
 		this.app.workspace.trigger('css-change');
+	}
+
+	updateClass(className: string, condition: boolean) {
+		document.body.toggleClass(className, condition);
+		this.register(() => document.body.removeClass(className));
 	}
 
 	updateStyleEl() {
@@ -91,10 +93,52 @@ export class DomManager extends Component {
 		].join('\n');
 
 		this.styleEl.textContent += [
-			`.workspace-leaf.pdf-plus-link-opened.is-highlighted::before {`,
+			`\n.workspace-leaf.pdf-plus-link-opened.is-highlighted::before {`,
 			`	opacity: ${settings.existingTabHighlightOpacity};`,
 			`}`
 		].join('\n');
+
+		this.setCSSColorVariables();
+		this.updateCalloutStyle();
+	}
+
+	updateCalloutStyle() {
+		if (!this.plugin.settings.useCallout) return;
+
+		const calloutType = this.plugin.settings.calloutType.toLowerCase();
+
+		for (const colorName of Object.keys(this.plugin.settings.colors)) {
+			const varName = this.toCSSVariableName(colorName) ?? '--pdf-plus-default-color-rgb';
+
+			this.styleEl.textContent += [
+				`\n.callout[data-callout="${calloutType}"][data-callout-metadata="${colorName.toLowerCase()}"] {`,
+				`	--callout-color: var(${varName});`,
+				`   background-color: rgba(var(--callout-color), var(--pdf-plus-highlight-opacity, 0.2))`,
+				`}`
+			].join('\n');
+		}
+
+		this.styleEl.textContent += [
+			`\n.callout[data-callout="${calloutType}"] {`,
+			`	--callout-color: var(--pdf-plus-default-color-rgb);`,
+			`   background-color: rgba(var(--callout-color), var(--pdf-plus-highlight-opacity, 0.2))`,
+			`}`
+		].join('\n');
+
+		const iconName = this.plugin.settings.calloutIcon;
+		if (iconName) {
+			this.styleEl.textContent += [
+				`\n.callout[data-callout="${calloutType}"] {`,
+				`   --callout-icon: lucide-${iconName};`,
+				`}`
+			].join('\n');
+		} else {
+			this.styleEl.textContent += [
+				`\n.callout[data-callout="${calloutType}"] .callout-icon {`,
+				`   display: none;`,
+				`}`
+			].join('\n');
+		}
 	}
 
 	setCSSColorVariables() {
@@ -106,7 +150,11 @@ export class DomManager extends Component {
 			if (varName !== null) {
 				if (rgbColor !== null) {
 					const { r, g, b } = rgbColor;
-					document.body.style.setProperty(varName, `${r}, ${g}, ${b}`);
+					this.styleEl.textContent += [
+						`\nbody {`,
+						`    ${varName}: ${r}, ${g}, ${b}`,
+						`}`
+					].join('\n');
 				}
 			}
 		}
@@ -115,18 +163,20 @@ export class DomManager extends Component {
 		if (settings.defaultColor in settings.colors) {
 			const varName = this.toCSSVariableName(settings.defaultColor);
 			if (varName !== null) {
-				document.body.style.setProperty(
-					'--pdf-plus-default-color-rgb',
-					`var(${varName})`
-				);
+				this.styleEl.textContent += [
+					`\nbody {`,
+					`    --pdf-plus-default-color-rgb: var(${varName})`,
+					`}`
+				].join('\n');
 				defaultColorSet = true;
 			}
 		}
 		if (!defaultColorSet) {
-			document.body.style.setProperty(
-				'--pdf-plus-default-color-rgb',
-				'var(--text-highlight-bg-rgb)'
-			);
+			this.styleEl.textContent += [
+				`\nbody {`,
+				`    --pdf-plus-default-color-rgb: var(--text-highlight-bg-rgb)`,
+				`}`
+			].join('\n');
 		}
 
 		let defaultColor = settings.colors[settings.defaultColor];

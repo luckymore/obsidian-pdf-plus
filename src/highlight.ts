@@ -2,7 +2,7 @@ import { App, Component, HoverParent, HoverPopover, Keymap, LinkCache, Notice, S
 
 import PDFPlus from 'main';
 import { PDFPlusAPI } from 'api';
-import { getSubpathWithoutHash, isMouseEventExternal } from 'utils';
+import { getSubpathWithoutHash, isCanvas, isEmbed, isHoverPopover, isMouseEventExternal, isNonEmbedLike } from 'utils';
 import { BacklinkView, ObsidianViewer } from 'typings';
 
 
@@ -52,8 +52,18 @@ export class BacklinkHighlighter extends Component implements HoverParent {
         plugin.addChild(this); // clear highlight on plugin unload
     }
 
+    shouldHighlightBacklinks(): boolean {
+        return this.plugin.settings.highlightBacklinks
+            && (
+                isNonEmbedLike(this.viewer) 
+                || (this.plugin.settings.highlightBacklinksInCanvas && isCanvas(this.viewer))
+                || (this.plugin.settings.highlightBacklinksInHoverPopover && isHoverPopover(this.viewer))
+                || (this.plugin.settings.highlightBacklinksInEmbed && isEmbed(this.viewer))
+            );
+    }
+
     onload() {
-        if (!this.viewer.isEmbed) {
+        if (this.shouldHighlightBacklinks()) {
             this.highlightBacklinks();
             this.registerEvent(this.app.metadataCache.on('resolved', () => {
                 this.highlightBacklinks();
@@ -130,8 +140,7 @@ export class BacklinkHighlighter extends Component implements HoverParent {
 
     _highlightBacklinks() {
         if (!this.file) return;
-        if (this.viewer.isEmbed) return;
-        if (!this.plugin.settings.highlightBacklinks) return;
+        if (!this.shouldHighlightBacklinks()) return;
 
         this.setBacklinks(this.file);
 
@@ -314,7 +323,7 @@ export class BacklinkHighlighter extends Component implements HoverParent {
                     });
                     return;
                 }
-                this.api.workspace.openMarkdownLink(sourcePath, this.file?.path ?? '', line);
+                this.api.workspace.openMarkdownLinkFromPDF(sourcePath, this.file?.path ?? '', line);
             }
         });
     }

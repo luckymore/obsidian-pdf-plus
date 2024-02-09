@@ -18,11 +18,7 @@ See [here](#installation) for an installation guide.
 > [!note]
 > - If you like this plugin, don't forget to star this repository! I'd also appreciate it if you could [support me](#support-development).
 > - Some features require the [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin enabled.
-> - If something is not working, first try the following:
->   1. Open a PDF file
->   2. Enable this plugin
->   3. Run the `Reload app without saving` command
->   
+> - When something is not working, first restart Obsidian by running the `Reload app without saving` command.
 >   If it doesn't help, let me know by [filing an issue](https://github.com/RyotaUshio/obsidian-pdf-plus/issues).
 
 > [!warning]
@@ -96,6 +92,10 @@ Annotate PDF files with highlights just by linking to text selection. You can ea
   - Open backlink
   - Popover preview of backlink
 - **Double click a piece of highlighted text to open the corresponding backlink**
+
+#### PDF++ callouts
+
+Create [callouts](https://help.obsidian.md/Editing+and+formatting/Callouts) with the same color as the highlight color without any CSS snippet scripting.
 
 #### [Backlink pane](https://help.obsidian.md/Plugins/Backlinks) improvements
 
@@ -394,3 +394,4 @@ If you find [my plugins](https://ryotaushio.github.io/the-hobbyist-dev/) useful,
 
 <a href="https://www.buymeacoffee.com/ryotaushio" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="width: 180px; height:auto;"></a>
 
+<a href='https://ko-fi.com/E1E6U7CJZ' target='_blank'><img height='36' style='border:0px; width: 180px; height:auto;' src='https://storage.ko-fi.com/cdn/kofi2.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>

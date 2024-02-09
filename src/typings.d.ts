@@ -1,4 +1,5 @@
 import { App, CachedMetadata, Component, Debouncer, EditableFileView, FileView, Modal, PluginSettingTab, Scope, SearchComponent, SearchMatches, SettingTab, TFile, SearchMatchPart, IconName, ReferenceCache, TFolder, TAbstractFile, MarkdownView, MarkdownFileInfo, Events } from 'obsidian';
+import { CanvasData } from 'obsidian/canvas';
 import { EditorView } from '@codemirror/view';
 import { PDFDocumentProxy, PDFPageProxy, PageViewport } from 'pdfjs-dist';
 import { AnnotationStorage } from 'pdfjs-dist/types/src/display/annotation_storage';
@@ -20,7 +21,7 @@ declare global {
 /** PDF-related */
 
 interface PDFView extends EditableFileView {
-    viewer: PDFViewer;
+    viewer: PDFViewerComponent;
     scope: Scope;
     onModify(): void;
     showSearch(): void;
@@ -39,10 +40,10 @@ type PDFViewExtraState = {
     zoom?: number;
 };
 
-interface PDFViewer extends Component {
+interface PDFViewerComponent extends Component {
     scope: Scope;
     child: PDFViewerChild | null;
-    next: any[];
+    next: ((child: PDFViewerChild) => any)[] | null;
     app: App;
     containerEl: HTMLElement;
     opts: any;
@@ -115,7 +116,7 @@ interface ObsidianViewer {
     subpath: string | null;
     isEmbed: boolean;
     eventBus: EventBus;
-    pdfViewer: RawPDFViewer | null;
+    pdfViewer: PDFViewer | null;
     pdfSidebar: PDFSidebar;
     pdfOutlineViewer: PDFOutlineViewer;
     pdfThumbnailViewer: PDFThumbnailViewer;
@@ -152,6 +153,7 @@ interface PDFOutlineViewer {
     reset(): void;
     setPageNumber(pageNumber: number): void;
     recurseTree(): PDFOutlineTreeNode[];
+    onItemClick(item: PDFOutlineTreeNode): void;
     onItemContextMenu(item: PDFOutlineTreeNode, evt: MouseEvent): Promise<void>;
 }
 
@@ -207,8 +209,7 @@ interface PDFToolbar {
     reset(): void;
 }
 
-/** Originally named "PDFViewer" */
-interface RawPDFViewer {
+interface PDFViewer {
     pdfDocument: PDFDocumentProxy;
     pagesPromise: Promise<any> | null;
     pagesCount: number;
@@ -290,6 +291,7 @@ type PDFjsDestArray = [pageRef: { num: number, gen: number }, destType: { name: 
 interface AnnotationElement {
     annotationStorage: AnnotationStorage;
     layer: HTMLElement; // div.annotationLayer
+    container: HTMLElement; // section
     parent: AnnotationLayer;
     data: {
         subtype: string;
@@ -329,7 +331,7 @@ interface PDFEmbed extends Embed {
     file: TFile;
     subpath?: string;
     containerEl: HTMLElement;
-    viewer: PDFViewer;
+    viewer: PDFViewerComponent;
 }
 
 interface AnnotationLayer {
@@ -693,7 +695,19 @@ declare module 'obsidian' {
         setting: AppSetting;
         plugins: {
             manifests: Record<string, PluginManifest>;
-            plugins: Record<string, Plugin>;
+            plugins: {
+                dataview?: Plugin & {
+                    api: any;
+                };
+                quickadd?: Plugin & {
+                    api: any;
+                };
+                ['obsidian-hover-editor']?: Plugin & {
+                    activePopovers: (HoverPopover & { toggleMinimized(): void, togglePin(value?: boolean): void })[];
+                    spawnPopover(initiatingEl?: HTMLElement, onShowCallback?: () => unknown): WorkspaceLeaf;
+                };
+                [id: string]: Plugin | undefined;
+            }
             enabledPlugins: Set<string>;
         };
         internalPlugins: {
@@ -711,6 +725,7 @@ declare module 'obsidian' {
             }
         };
         commands: {
+            commands: Record<string, Command>;
             executeCommandById(id: string): boolean;
             findCommand(id: string): Command | undefined;
         }
@@ -788,6 +803,46 @@ declare module 'obsidian' {
         handleDrop: DropEventListener;
     }
 
+    interface CanvasView extends TextFileView {
+        canvas: Canvas;
+    }
+
+    interface Canvas {
+        nodes: Map<string, CanvasNode>;
+        createTextNode(config: {
+            pos: { x: number, y: number };
+            position?: 'center' | 'top' | 'right' | 'bottom' | 'left';
+            size?: unknown;
+            text?: string;
+            save?: boolean;
+            focus?: boolean;
+        }): CanvasTextNode;
+        posCenter(): { x: number, y: number };
+        getData(): CanvasData;
+    }
+
+    type CanvasNode = CanvasFileNode | CanvasTextNode | CanvasLinkNode | CanvasGroupNode;
+
+    interface CanvasFileNode {
+        app: App;
+        file: TFile | null;
+        subpath: string
+        child: Embed;
+    }
+
+    interface CanvasTextNode {
+        app: App;
+        text: string;
+    }
+
+    interface CanvasLinkNode {
+        app: App;
+    }
+
+    interface CanvasGroupNode {
+        app: App;
+    }
+
     interface Vault {
         getConfig(name: string): any;
         getConfig(name: 'useMarkdownLinks'): boolean;
@@ -795,5 +850,10 @@ declare module 'obsidian' {
 
     interface Component {
         _loaded: boolean;
+        _children: Component[];
+    }
+
+    interface HoverPopover {
+        hide(): void;
     }
 }

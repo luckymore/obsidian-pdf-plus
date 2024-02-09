@@ -71,6 +71,10 @@ settings:
     border-color: var(--background-modifier-error);
 }
 
+.setting-item-description.error {
+    color: var(--background-modifier-error);
+}
+
 .is-mobile,
 .is-tablet {
     .pdf-plus-color-palette .pdf-plus-color-palette-item-inner {
@@ -105,6 +109,10 @@ settings:
         color: var(--text-muted);
         font-size: var(--font-ui-small);
     }
+}
+
+.pdf-plus-settings .setting-item-heading:not(.normal-margin-top) {
+    margin-top: 2.4em;
 }
 
 .pdf-plus-settings .setting-item-description {
@@ -145,6 +153,7 @@ settings:
     margin: calc(var(--pdf-plus-highlight-padding-vertical-em, var(--pdf-plus-highlight-padding-default-em)) * -1) calc(var(--pdf-plus-highlight-padding-horizontal-em, var(--pdf-plus-highlight-padding-default-em)) * -1);
     border-radius: var(--radius-s);
     pointer-events: auto;
+    cursor: text;
 }
 
 .pdf-plus-annotation-edit-modal {
@@ -169,7 +178,7 @@ settings:
     }
 
     /* Arrange two children of .setting-item, namely .setting-item-info and .setting-item-contrl, vertically */
-    .setting-item:last-child:has( textarea) {
+    .setting-item:last-child:has(textarea) {
         display: flex;
         flex-direction: column;
         justify-content: left;
@@ -184,4 +193,30 @@ settings:
 
 .popupWrapper {
     --pdf-popup-width: 300px;
+}
+
+.pdf-plus-draggable .popup {
+    cursor: default;
+}
+
+#pdf-plus-funding {
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    align-items: flex-end;
+
+    .setting-item-control {
+        padding-top: var(--size-4-4);
+    }
+}
+
+#pdf-plus-funding-icon-info-container {
+    display: flex;
+    flex-direction: row;
+    /* justify-content: left; */
+    align-items: center;
+}
+
+#pdf-plus-funding-icon {
+    margin-right: var(--size-4-4);
 }
