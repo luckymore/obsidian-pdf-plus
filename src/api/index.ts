@@ -10,6 +10,7 @@ import { encodeLinktext, parsePDFSubpath } from 'utils';
 import { AnnotationElement, CanvasFileNode, CanvasNode, CanvasView, DestArray, EventBus, ObsidianViewer, PDFOutlineViewer, PDFPageView, PDFSidebar, PDFThumbnailView, PDFView, PDFViewExtraState, PDFViewerChild, PDFjsDestArray, PDFViewer, PDFEmbed } from 'typings';
 import { PDFDocument } from '@cantoo/pdf-lib';
 import { PDFPlusCommands } from './commands';
+import { parseCanvas } from '../../canvas-index';
 
 
 export class PDFPlusAPI {
@@ -551,4 +552,6 @@ export class PDFPlusAPI {
         }
         return false;
     }
+
+    parseCanvas = parseCanvas;
 }
