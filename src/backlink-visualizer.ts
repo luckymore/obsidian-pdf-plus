@@ -388,6 +388,15 @@ export class PDFViewerBacklinkVisualizer extends PDFBacklinkVisualizer implement
         const rectEl = this.lib.highlight.viewer.placeRectInPage([left, bottom, right, top], pageView);
         rectEl.addClasses(['pdf-plus-backlink', 'pdf-plus-backlink-fit-r']);
 
+        rectEl.createDiv('pdf-plus-resize-handle left');
+        rectEl.createDiv('pdf-plus-resize-handle right');
+        rectEl.createDiv('pdf-plus-resize-handle top');
+        rectEl.createDiv('pdf-plus-resize-handle bottom');
+        rectEl.createDiv('pdf-plus-resize-handle top-left');
+        rectEl.createDiv('pdf-plus-resize-handle top-right');
+        rectEl.createDiv('pdf-plus-resize-handle bottom-left');
+        rectEl.createDiv('pdf-plus-resize-handle bottom-right');
+
         const cacheToDoms = this.domManager.getCacheToDomsMap(pageNumber);
         for (const cache of caches) {
             cacheToDoms.addValue(cache, rectEl);

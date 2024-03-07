@@ -91,6 +91,17 @@ settings:
 
 :root {
     --pdf-plus-highlight-padding-default-em: 0.05em;
+
+    /* resize handle sizing */
+    --pdf-plus-resize-handle-side-size: 12px;
+    --pdf-plus-resize-handle-corner-size: 18px;
+}
+
+body {
+    /* calculated variables, do not modify */
+    --pdf-plus-resize-handle-side-offset: calc((var(--pdf-plus-resize-handle-side-size) - 3px) * -1);
+    --pdf-plus-resize-handle-corner-offset: calc((var(--pdf-plus-resize-handle-corner-size) / 2) * -1);
+    --pdf-plus-resize-handle-side-length: calc(100% - var(--pdf-plus-resize-handle-corner-size));
 }
 
 .hide-pdf-embed-toolbar .pdf-embed[src*="#"] .pdf-toolbar,
@@ -452,4 +463,73 @@ body {
     /* Avoid preventing annotation click */
     position: absolute;
     pointer-events: none;
+}
+
+.pdf-plus-resize-handle {
+    position: absolute;
+    touch-action: none;
+}
+
+.pdf-plus-resize-handle.top {
+    top: var(--pdf-plus-resize-handle-side-offset);
+    height: var(--pdf-plus-resize-handle-side-size);
+    left: calc(var(--pdf-plus-resize-handle-corner-offset) * -1);
+    width: var(--pdf-plus-resize-handle-side-length);
+    cursor: ns-resize;
+}
+
+.pdf-plus-resize-handle.left {
+    height: var(--pdf-plus-resize-handle-side-length);
+    left: var(--pdf-plus-resize-handle-side-offset);
+    top: calc(var(--pdf-plus-resize-handle-corner-offset) * -1);
+    width: var(--pdf-plus-resize-handle-side-size);
+    cursor: ew-resize;
+}
+
+.pdf-plus-resize-handle.right {
+    height: var(--pdf-plus-resize-handle-side-length);
+    right: var(--pdf-plus-resize-handle-side-offset);
+    top: calc(var(--pdf-plus-resize-handle-corner-offset) * -1);
+    width: var(--pdf-plus-resize-handle-side-size);
+    cursor: ew-resize;
+}
+
+.pdf-plus-resize-handle.bottom {
+    bottom: var(--pdf-plus-resize-handle-side-offset);
+    height: var(--pdf-plus-resize-handle-side-size);
+    left: calc(var(--pdf-plus-resize-handle-corner-offset) * -1);
+    width: var(--pdf-plus-resize-handle-side-length);
+    cursor: ns-resize;
+}
+
+.pdf-plus-resize-handle.bottom-left {
+    bottom: var(--pdf-plus-resize-handle-corner-offset);
+    height: var(--pdf-plus-resize-handle-corner-size);
+    left: var(--pdf-plus-resize-handle-corner-offset);
+    width: var(--pdf-plus-resize-handle-corner-size);
+    cursor: nesw-resize;
+}
+
+.pdf-plus-resize-handle.bottom-right {
+    bottom: var(--pdf-plus-resize-handle-corner-offset);
+    height: var(--pdf-plus-resize-handle-corner-size);
+    right: var(--pdf-plus-resize-handle-corner-offset);
+    width: var(--pdf-plus-resize-handle-corner-size);
+    cursor: nwse-resize;
+}
+
+.pdf-plus-resize-handle.top-left {
+    top: var(--pdf-plus-resize-handle-corner-offset);
+    height: var(--pdf-plus-resize-handle-corner-size);
+    left: var(--pdf-plus-resize-handle-corner-offset);
+    width: var(--pdf-plus-resize-handle-corner-size);
+    cursor: nwse-resize;
+}
+
+.pdf-plus-resize-handle.top-right {
+    top: var(--pdf-plus-resize-handle-corner-offset);
+    height: var(--pdf-plus-resize-handle-corner-size);
+    right: var(--pdf-plus-resize-handle-corner-offset);
+    width: var(--pdf-plus-resize-handle-corner-size);
+    cursor: nesw-resize;
 }
