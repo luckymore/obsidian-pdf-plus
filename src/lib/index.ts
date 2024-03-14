@@ -1,4 +1,4 @@
-import { App, Component, EditableFileView, MarkdownView, Notice, Platform, TFile, TextFileView, View, base64ToArrayBuffer, parseLinktext } from 'obsidian';
+import { App, Component, EditableFileView, MarkdownView, Notice, Platform, TFile, TextFileView, View, base64ToArrayBuffer, normalizePath, parseLinktext } from 'obsidian';
 import { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
 import { EncryptedPDFError, PDFArray, PDFDict, PDFDocument, PDFName, PDFNumber, PDFRef } from '@cantoo/pdf-lib';
 
@@ -774,6 +774,40 @@ export class PDFPlusLib {
 
     getAvailablePathForCopy(file: TFile) {
         return this.app.vault.getAvailablePath(removeExtension(file.path), file.extension)
+    }
+
+    async getAvailablePathForCroppedPDFImage(pdfFile: TFile, mdFile: TFile | null) {
+        const settings = this.plugin.settings;
+        const imageExtension = settings.rectImageExtension;
+
+        if (settings.rectImageFileLocation === 'attachment') {
+            return await this.app.fileManager.getAvailablePathForAttachment(pdfFile.basename + '.' + imageExtension, '');
+        }
+
+        const folderPath = (() => {
+            switch (settings.rectImageFileLocation) {
+                case 'root':
+                    return '/';
+                case 'current-pdf':
+                    return (pdfFile.parent?.path ?? '');
+                case 'current-md':
+                    return (mdFile?.parent?.path ?? '');
+                case 'folder':
+                    return normalizePath(settings.rectImageFileFolderPath);
+                case 'subfolder-md':
+                    if (mdFile?.parent) {
+                        return normalizePath(mdFile.parent.path + '/' + settings.rectImageFileMDSubfolderPath); 
+                    }
+                    return '';
+                case 'subfolder-pdf':
+                    if (pdfFile.parent) {
+                        return normalizePath(pdfFile.parent.path + '/' + settings.rectImageFilePDFSubfolderPath); 
+                    }
+                    return '';
+            }
+        })();
+        const folder = this.app.vault.getAbstractFileByPath(folderPath) ?? this.app.vault.getRoot();
+        return this.app.vault.getAvailablePath(normalizePath(folder.path + '/' + pdfFile.basename), imageExtension);
     }
 
     get metadataCacheUpdatePromise() {

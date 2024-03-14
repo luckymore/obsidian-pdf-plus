@@ -54,6 +54,17 @@ const IMAGE_EXTENSIONS = [
 ] as const;
 export type ImageExtension = typeof IMAGE_EXTENSIONS[number];
 
+const IMAGE_FILE_LOCATIONS = {
+	'attachment': 'Follow app settings',
+	'root': 'Vault folder',
+	'current-pdf': 'Same folder as current PDF file',
+	'current-md': 'Same folder as current markdown file',
+	'folder': 'In the folder specified below',
+	'subfolder-pdf': 'In subfolder under current PDF\'s folder',
+	'subfolder-md': 'In subfolder under current markdown\'s folder',
+} as const;
+export type ImageFileLocation = keyof typeof IMAGE_FILE_LOCATIONS;
+
 export interface namedTemplate {
 	name: string;
 	template: string;
@@ -206,6 +217,10 @@ export interface PDFPlusSettings {
 	rectEmbedStaticImage: boolean;
 	rectImageFormat: 'file' | 'data-url';
 	rectImageExtension: ImageExtension;
+	rectImageFileLocation: ImageFileLocation;
+	rectImageFileFolderPath: string;
+	rectImageFilePDFSubfolderPath: string;
+	rectImageFileMDSubfolderPath: string;
 	zoomToFitRect: boolean;
 	includeColorWhenCopyingRectLink: boolean;
 	backlinkIconSize: number;
@@ -412,6 +427,10 @@ export const DEFAULT_SETTINGS: PDFPlusSettings = {
 	rectEmbedStaticImage: false,
 	rectImageFormat: 'file',
 	rectImageExtension: 'webp',
+	rectImageFileLocation: 'attachment',
+	rectImageFileFolderPath: '',
+	rectImageFilePDFSubfolderPath: '',
+	rectImageFileMDSubfolderPath: '',
 	zoomToFitRect: false,
 	includeColorWhenCopyingRectLink: true,
 	backlinkIconSize: 50,
@@ -1254,6 +1273,45 @@ export class PDFPlusSettingTab extends PluginSettingTab {
 			if (this.plugin.settings.rectImageFormat === 'file') {
 				this.addDropdownSetting('rectImageExtension', IMAGE_EXTENSIONS)
 					.setName('Image file format');
+				this.addDropdownSetting('rectImageFileLocation', IMAGE_FILE_LOCATIONS, () => this.redisplay())
+					.setName('Image file location')
+					.setDesc(`If set to "${IMAGE_FILE_LOCATIONS['attachment']}", the image file will be saved in the folder you specify in "Default location for new attachments" in the core Obsidian settings.`);
+				if (this.plugin.settings.rectImageFileLocation === 'folder') {
+					this.addSetting('rectImageFileFolderPath')
+						.setName('Folder to save image file in')
+						.setDesc('The saved images will appear under this folder.')
+						.addText((text) => {
+							text.setValue(this.plugin.settings.rectImageFileFolderPath);
+							text.inputEl.size = 30;
+							new FuzzyFolderSuggest(this.app, text.inputEl)
+								.onSelect(({ item: folder }) => {
+									this.plugin.settings.rectImageFileFolderPath = folder.path;
+									this.plugin.saveSettings();
+								});
+						});
+				} else {
+					for (const [location, settingName] of [
+						['subfolder-md', 'rectImageFileMDSubfolderPath'],
+						['subfolder-pdf', 'rectImageFilePDFSubfolderPath'],
+					]) {
+						if (this.plugin.settings.rectImageFileLocation === location as ImageFileLocation) {
+							this.addSetting(settingName as KeysOfType<PDFPlusSettings, string>)
+								.setName('Subfolder name')
+								.setDesc('The saved images will appear under a subfolder with this name.')
+								.addText((text) => {
+									text.setValue(this.plugin.settings[settingName as KeysOfType<PDFPlusSettings, string>])
+										.then((text) => {
+											text.inputEl.size = 30;
+										})
+										.onChange((value) => {
+											// @ts-ignore
+											this.plugin.settings[settingName] = value;
+											this.plugin.saveSettings();
+										});
+								});
+						}
+					}
+				}
 			}
 		}
 		this.addToggleSetting('includeColorWhenCopyingRectLink')
@@ -1956,7 +2014,7 @@ export class PDFPlusSettingTab extends PluginSettingTab {
 				this.addToggleSetting('preserveCurrentLeftOffsetWhenOpenPDFLink')
 					.setName('Preserve the current horizontal scroll position');
 			}
-			
+
 		}
 		this.addDropdownSetting('paneTypeForFirstPDFLeaf', PANE_TYPE)
 			.setName(`How to open PDF links when there is no open PDF file`)
